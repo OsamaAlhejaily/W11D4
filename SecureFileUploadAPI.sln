@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecureFileUploadAPI", "SecureFileUploadAPI.csproj", "{33C1ED82-8AF0-4984-BB37-EF9CA740EAAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33C1ED82-8AF0-4984-BB37-EF9CA740EAAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33C1ED82-8AF0-4984-BB37-EF9CA740EAAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33C1ED82-8AF0-4984-BB37-EF9CA740EAAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33C1ED82-8AF0-4984-BB37-EF9CA740EAAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6512C83C-8E1F-41CA-8EE5-D4AB7BBE9B10}
+	EndGlobalSection
+EndGlobal

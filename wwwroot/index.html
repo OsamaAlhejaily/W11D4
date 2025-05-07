@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure File Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        #fileInput {
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+            button:disabled {
+                background-color: #ccc;
+            }
+
+        progress {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #statusText {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Secure File Upload</h2>
+
+    <div class="container">
+        <input type="file" id="fileInput" />
+        <br>
+        <button id="uploadButton">Upload File</button>
+        <br>
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <progress id="progressBar" value="0" max="100" style="display: none;"></progress>
+        <div id="statusText"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('fileInput');
+            const uploadButton = document.getElementById('uploadButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
+
+            uploadButton.addEventListener('click', uploadFile);
+
+            function uploadFile() {
+                const file = fileInput.files[0];
+                if (!file) {
+                    showError("Please select a file.");
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    showError("File is too large. Maximum size is 10MB.");
+                    return;
+                }
+
+                errorMessage.style.display = 'none';
+
+                progressBar.style.display = 'block';
+
+                uploadButton.disabled = true;
+
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append("file", file);
+
+                xhr.upload.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        progressBar.value = (e.loaded / e.total) * 100;
+                    }
+                };
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.processingId) {
+                                statusText.textContent = "Status: Pending";
+                                pollStatus(response.processingId);
+                            } else {
+                                showError("Invalid server response.");
+                                uploadButton.disabled = false;
+                            }
+                        } catch (e) {
+                            showError("Error parsing server response.");
+                            uploadButton.disabled = false;
+                        }
+                    } else {
+                        showError("Upload failed: " + xhr.statusText);
+                        uploadButton.disabled = false;
+                    }
+                };
+
+                xhr.onerror = function () {
+                    showError("Network error occurred during upload.");
+                    uploadButton.disabled = false;
+                };
+
+                xhr.open("POST", "/upload/upload");
+                xhr.send(formData);
+            }
+
+            function pollStatus(id) {
+                const interval = setInterval(() => {
+                    fetch(`/upload/status/${id}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            statusText.textContent = "Status: " + data.status;
+
+                            if (["Completed", "Failed", "VirusDetected"].includes(data.status)) {
+                                clearInterval(interval);
+                                uploadButton.disabled = false;
+
+                                if (data.status === "Completed") {
+                                    statusText.textContent = "Status: Completed - File uploaded successfully!";
+                                } else if (data.status === "Failed") {
+                                    statusText.textContent = "Status: Failed - An error occurred.";
+                                } else if (data.status === "VirusDetected") {
+                                    statusText.textContent = "Status: Security issue detected in file.";
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            showError("Error checking file status.");
+                            clearInterval(interval);
+                            uploadButton.disabled = false;
+                        });
+                }, 2000);
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
